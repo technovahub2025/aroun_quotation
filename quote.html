@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AROUN - Quotation Template</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background:#f3f4f6; 
+      padding:20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .paper { 
+      width:210mm; 
+      min-height:297mm; 
+      margin:0 auto; 
+      background:white; 
+      border:1px solid #ccc; 
+      padding:10mm; 
+      box-sizing:border-box; 
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .header-banner { 
+      border:1px solid #bbb; 
+      padding:5px; 
+      display:flex; 
+      justify-content:space-between; 
+      align-items:center; 
+    }
+    .logo { 
+      display:flex; 
+      align-items:center; 
+      gap:8px; 
+      flex: 1;
+    }
+    .logo-placeholder {
+      width: 80px;
+      height: 80px;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed #999;
+      font-weight: bold;
+      color: #666;
+    }
+    .company-title { 
+      text-align:center; 
+      font-weight:700; 
+      font-size:16px; 
+    }
+    .cert-logos {
+      display: flex;
+      gap: 5px;
+    }
+    .cert-logo {
+      width: 40px;
+      height: 40px;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed #999;
+      font-size: 10px;
+      text-align: center;
+    }
+    .title { 
+      text-align:center; 
+      font-weight:800; 
+      font-size:18px; 
+      margin:10px 0; 
+    }
+    .top-section { 
+      display:flex; 
+      gap:10px; 
+      margin-top:8px; 
+    }
+    .left-box, .right-box { 
+      border:1px solid #000; 
+      padding:8px; 
+      box-sizing:border-box; 
+      font-size: 13px;
+    }
+    .left-box { 
+      flex:1; 
+      min-height:160px; 
+    }
+    .right-box { 
+      width:40%; 
+      display:flex; 
+      flex-direction:column; 
+      justify-content:space-between; 
+    }
+    .right-row { 
+      border-bottom:1px solid #000; 
+      padding:4px; 
+      display:flex; 
+      justify-content:space-between; 
+      align-items:center; 
+    }
+    .row-label{ 
+      font-weight:700; 
+      width:45%; 
+      font-size: 12px;
+    }
+    .row-value{ 
+      width:55%; 
+      text-align:right; 
+      font-weight:600; 
+      font-size: 12px;
+    }
+    .table-container {
+      margin-top: 10px;
+      overflow-x: auto;
+    }
+    .table { 
+      width:100%; 
+      border-collapse:collapse; 
+      font-size: 12px;
+    }
+    .table th, .table td { 
+      border:1px solid #000; 
+      padding:6px; 
+      vertical-align:top; 
+    }
+    .table th { 
+      background:#f9fafb; 
+      font-weight:700; 
+      text-align:left; 
+    }
+    .items-body td { 
+      height:30px; 
+    }
+    .total-row td { 
+      font-weight:700; 
+      text-align:right; 
+    }
+    .bottom-section { 
+      display:flex; 
+      gap:10px; 
+      margin-top:10px; 
+    }
+    .declaration, .bank { 
+      border:1px solid #000; 
+      padding:8px; 
+      font-size: 12px;
+    }
+    .footer { 
+      border-top:1px solid #000; 
+      margin-top:10px; 
+      padding-top:5px; 
+      text-align:center; 
+      font-size:11px; 
+    }
+    .editable{ 
+      outline:1px dashed transparent; 
+      min-height: 18px;
+    }
+    .editable:focus{ 
+      outline:1px dashed #2563eb; 
+      background:#fffbe6; 
+    }
+    .controls { 
+      margin-bottom:15px; 
+      display:flex; 
+      gap:8px; 
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 210mm;
+      width: 100%;
+    }
+    .print-instructions {
+      margin-top: 15px;
+      padding: 10px;
+      background: #fffbeb;
+      border: 1px solid #f59e0b;
+      border-radius: 5px;
+      text-align: center;
+      max-width: 210mm;
+      width: 100%;
+    }
+    .remove-row-btn {
+      color: #dc2626;
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0 5px;
+    }
+    
+    @media print { 
+      body { 
+        background:white; 
+        padding: 0;
+      } 
+      .paper{ 
+        border:none; 
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+        min-height: auto;
+      } 
+      .controls{ 
+        display:none; 
+      }
+      .print-instructions {
+        display: none;
+      }
+      .remove-row-btn {
+        display: none;
+      }
+      .date-and-url-container {
+        display: none !important;
+      }
+    }
+    
+    /* Column widths for the table */
+    .col-sno { width: 5%; }
+    .col-desc { width: 30%; }
+    .col-hsn { width: 8%; }
+    .col-gst { width: 7%; }
+    .col-due { width: 8%; }
+    .col-qty { width: 7%; }
+    .col-rate { width: 8%; }
+    .col-per { width: 5%; }
+    .col-disc { width: 7%; }
+    .col-amt { width: 10%; }
+    .col-remove { width: 3%; }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button id="addRowBtn" class="px-3 py-2 bg-blue-600 text-white rounded">Add Row</button>
+    <button id="downloadPdfBtn" ></button>
+    <button id="printBtn" class="px-3 py-2 bg-purple-600 text-white rounded">Download</button>
+    <button id="resetBtn" class="px-3 py-2 bg-gray-600 text-white rounded">Reset</button>
+    <button id="saveBtn" class="px-3 py-2 bg-green-600 text-white rounded">Save</button>
+    <input type="file" id="loadFileInput" style="display: none;" accept=".json" />
+    <button id="loadBtn" class="px-3 py-2 bg-yellow-600 text-white rounded">Load</button>
+  </div>
+ 
+  <div id="quotation" class="paper">
+    <header class="header-banner">
+      <div class="logo">
+                 <img src="arr.jpeg" alt="Logo" style="max-width:250px; height:auto;">
+
+        <div style="font-size:12px;">
+          <div contenteditable="true" class="editable font-bold">Aroun Systems & Safety Equipments</div>
+          <div contenteditable="true" class="editable">Manufacturer & Wholesalers For Fire & Safety Equipments</div>
+          <div contenteditable="true" class="editable text-sm">GSTIN : 34ADXP... | Address : 38, 39, 2nd Cross Street, Green Garden, Lawspet Post, Puducherry - 605 008</div>
+        </div>
+      </div>
+      <div class="cert-logos">
+        <img src="iso.jpg" alt="iso" style="max-width:50px; height: 50px;;"/>
+        <img src="gmp.jpg" alt="gmp" style="max-width:50px; height: 50px;;"/>
+        <img src="fsai.png" alt="fssai" style="max-width:50px; height: 50px;"/>
+      </div>
+    </header>
+
+    <h1 class="title">AROUN - QUOTATION</h1>
+
+    <div class="top-section">
+      <div class="left-box">
+        <div><strong>Buyer (Bill to)</strong></div>
+        <div contenteditable="true" class="editable mt-2">Plot: 1/1 to 1/4, Mannadipet Commune,</div>
+        <div contenteditable="true" class="editable mt-2">GSTIN/UIN : </div>
+        <div contenteditable="true" class="editable mt-2">State Name : Code : 34</div>
+        <div contenteditable="true" class="editable mt-2">Contact : </div>
+        <div contenteditable="true" class="editable mt-2">Mobile : </div>
+      </div>
+
+      <div class="right-box">
+        <div class="right-row">
+          <div class="row-label">Voucher No.</div>
+          <div class="row-value" contenteditable="true">ASSE/25-26/8181</div>
+        </div>
+        <div class="right-row">
+          <div class="row-label">Dated</div>
+          <div class="row-value" contenteditable="true">28-Aug-25</div>
+        </div>
+        <div class="right-row">
+          <div class="row-label">Mode/Terms of Payment</div>
+          <div class="row-value" contenteditable="true">02 Days</div>
+        </div>
+        <div class="right-row">
+          <div class="row-label">Buyer's Ref./Order No.</div>
+          <div class="row-value" contenteditable="true">ASSE/25-26/8181</div>
+        </div>
+        <div class="right-row">
+          <div class="row-label">Dispatched through</div>
+          <div class="row-value" contenteditable="true">By Hand</div>
+        </div>
+        <div class="right-row">
+          <div class="row-label">Destination</div>
+          <div class="row-value" contenteditable="true">Free Door Delivery</div>
+        </div>
+        <div class="right-row" style="border-bottom:none;">
+          <div class="row-label">Terms of Delivery</div>
+          <div class="row-value" contenteditable="true">Immediate</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="col-sno">Sl No.</th>
+            <th class="col-desc">Description of Goods</th>
+            <th class="col-hsn">HSN/SAC</th>
+            <th class="col-gst">GST Rate</th>
+            <th class="col-due">Due on</th>
+            <th class="col-qty">Quantity</th>
+            <th class="col-rate">Rate</th>
+            <th class="col-per">per</th>
+            <th class="col-disc">Disc. %</th>
+            <th class="col-amt">Amount</th>
+            <th class="col-remove"></th>
+          </tr>
+        </thead>
+        <tbody id="items" class="items-body">
+          <tr>
+            <td contenteditable="true" class="editable">1</td>
+            <td contenteditable="true" class="editable">Safety Shoes - Black</td>
+            <td contenteditable="true" class="editable">6403</td>
+            <td contenteditable="true" class="editable">18%</td>
+            <td contenteditable="true" class="editable"></td>
+            <td contenteditable="true" class="editable">10</td>
+            <td contenteditable="true" class="editable">500</td>
+            <td contenteditable="true" class="editable">Pair</td>
+            <td contenteditable="true" class="editable">0</td>
+            <td class="amount">5000.00</td>
+            <td><span class="remove-row-btn">✕</span></td>
+          </tr>
+          <tr>
+            <td contenteditable="true" class="editable">2</td>
+            <td contenteditable="true" class="editable">Safety Helmet - Yellow</td>
+            <td contenteditable="true" class="editable">6506</td>
+            <td contenteditable="true" class="editable">18%</td>
+            <td contenteditable="true" class="editable"></td>
+            <td contenteditable="true" class="editable">5</td>
+            <td contenteditable="true" class="editable">350</td>
+            <td contenteditable="true" class="editable">Piece</td>
+            <td contenteditable="true" class="editable">5</td>
+            <td class="amount">1662.50</td>
+            <td><span class="remove-row-btn">✕</span></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="9">Total</td>
+            <td id="totalAmount">6662.50</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="bottom-section">
+      <div class="declaration" style="flex:1;">
+        <div><strong>Amount Chargeable (in words)</strong></div>
+        <div id="amountWords" class="editable mt-2">INR Six Thousand Six Hundred Sixty Two And Fifty Paise Only</div>
+        <div class="mt-3"><strong>Declaration</strong></div>
+        <div contenteditable="true" class="editable mt-1 text-sm">Product Quality: Tested by QMS, EMS, OHSAS. No Sales Involved. Payments will be received only in company name through Cheque... Goods once sold cannot taken back in any Circumstances.</div>
+      </div>
+
+      <div class="bank" style="width:45%;">
+        <div><strong>Company's Bank Details</strong></div>
+        <div class="mt-2"><span class="font-semibold">Bank Name :</span> <span contenteditable="true" class="editable">HDFC BANK</span></div>
+        <div class="mt-1"><span class="font-semibold">A/c No. :</span> <span contenteditable="true" class="editable">50200000453361</span></div>
+        <div class="mt-1"><span class="font-semibold">Branch & IFS Code :</span> <span contenteditable="true" class="editable">45 FEET ROAD, & HDFC0001278</span></div>
+        <div class="mt-3 text-right"><strong>For Aroun Systems & Safety Equipments</strong></div>
+        <div class="mt-8 text-right"><strong>Authorised Signatory</strong></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div style="font-weight:700;">Manufacturer and Authorised Dealers</div>
+      <div class="mt-2 text-sm">Safety Shoes, Hand Gloves, Nose Masks, Respirator Products, Safety Belts, Safety Helmets, Safety Goggles...</div>
+      <div class="mt-2 text-xs">This is a Computer Generated Document</div>
+    </div>
+  </div>
+
+  <script>
+    // Add row functionality
+    document.getElementById('addRowBtn').addEventListener('click', function(){
+      const tbody = document.getElementById('items');
+      const index = tbody.rows.length + 1;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td contenteditable="true" class="editable">${index}</td>
+        <td contenteditable="true" class="editable">Item Description</td>
+        <td contenteditable="true" class="editable"></td>
+        <td contenteditable="true" class="editable">0%</td>
+        <td contenteditable="true" class="editable"></td>
+        <td contenteditable="true" class="editable">1</td>
+        <td contenteditable="true" class="editable">0</td>
+        <td contenteditable="true" class="editable"></td>
+        <td contenteditable="true" class="editable">0</td>
+        <td class="amount">0.00</td>
+        <td><span class="remove-row-btn">✕</span></td>
+      `;
+      tbody.appendChild(tr);
+      
+      // Add event listener to the new remove button
+      tr.querySelector('.remove-row-btn').addEventListener('click', function() {
+        removeRow(tr);
+      });
+      
+      updateTotals();
+    });
+
+    // Remove row functionality
+    function removeRow(row) {
+      if (document.getElementById('items').rows.length <= 1) {
+        alert("Cannot remove the last row. At least one item is required.");
+        return;
+      }
+      
+      if (confirm("Are you sure you want to remove this item?")) {
+        row.remove();
+        updateRowNumbers();
+        updateTotals();
+      }
+    }
+
+    // Update row numbers after removal
+    function updateRowNumbers() {
+      const rows = document.querySelectorAll('#items tr');
+      rows.forEach((row, index) => {
+        row.cells[0].innerText = index + 1;
+      });
+    }
+
+    // Add event listeners for remove buttons on existing rows
+    document.querySelectorAll('.remove-row-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        removeRow(this.closest('tr'));
+      });
+    });
+
+    // Download PDF functionality
+    document.getElementById('downloadPdfBtn').addEventListener('click', function(){
+  updateTotals();
+  
+  const element = document.getElementById('quotation');
+  
+  const opt = {
+    margin:       [10, 10, 10, 10],
+    filename:     'Aroun_Quotation.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  
+  html2pdf().set(opt).from(element).save();
+});
+
+
+    // Print functionality
+    document.getElementById('printBtn').addEventListener('click', function(){
+      updateTotals();
+      window.print();
+    });
+
+    // Reset functionality
+    document.getElementById('resetBtn').addEventListener('click', function(){
+      if(confirm('Reset template to defaults? This will reload the page.')) location.reload();
+    });
+
+    // Save functionality - WORKING VERSION
+    document.getElementById('saveBtn').addEventListener('click', function(){
+      const data = {
+        rows: []
+      };
+      const rows = document.querySelectorAll('#items tr');
+      rows.forEach(row => {
+        const rowData = [];
+        row.querySelectorAll('td').forEach(cell => {
+          rowData.push(cell.innerText);
+        });
+        data.rows.push(rowData);
+      });
+
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'quotation-data.json';
+      a.click();
+    });
+
+    // Load functionality
+    document.getElementById('loadBtn').addEventListener('click', function(){
+      document.getElementById('loadFileInput').click();
+    });
+
+    document.getElementById('loadFileInput').addEventListener('change', function(e){
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(event){
+        const data = JSON.parse(event.target.result);
+        const tbody = document.getElementById('items');
+        tbody.innerHTML = '';
+        data.rows.forEach(rowData => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = rowData.map((cellData, index) => {
+            const isAmountCell = index === rowData.length - 1;
+            if (isAmountCell) return `<td class="amount">${cellData}</td>`;
+            return `<td contenteditable="true" class="editable">${cellData}</td>`;
+          }).join('');
+          
+          // Add remove button to the row
+          const removeCell = document.createElement('td');
+          removeCell.innerHTML = '<span class="remove-row-btn">✕</span>';
+          tr.appendChild(removeCell);
+          
+          // Add event listener to the remove button
+          removeCell.querySelector('.remove-row-btn').addEventListener('click', function() {
+            removeRow(tr);
+          });
+          
+          tbody.appendChild(tr);
+        });
+        updateTotals();
+      };
+      reader.readAsText(file);
+    });
+
+    // Update totals calculation
+    function updateTotals(){
+      const tbody = document.getElementById('items');
+      let total = 0;
+      for(let r = 0; r < tbody.rows.length; r++){
+        const cells = tbody.rows[r].cells;
+        const qty = parseFloat(cells[5].innerText) || 0;
+        const rate = parseFloat(cells[6].innerText) || 0;
+        const discount = parseFloat(cells[8].innerText) || 0;
+        const gstText = cells[3].innerText.replace('%', '');
+        const gst = parseFloat(gstText) || 0;
+
+        let amount = qty * rate;
+        let discountAmt = amount * (discount / 100);
+        let afterDiscount = amount - discountAmt;
+        let gstAmt = afterDiscount * (gst / 100);
+        let finalAmt = afterDiscount + gstAmt;
+
+        cells[9].innerText = finalAmt.toFixed(2);
+        total += finalAmt;
+      }
+      document.getElementById('totalAmount').innerText = total.toFixed(2);
+      document.getElementById('amountWords').innerText = "INR " + numberToWords(total) + " Only";
+    }
+
+    // Convert number to words
+    function numberToWords(num) {
+      if (num === 0) return "Zero";
+      
+      const a = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+          "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+      const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+      
+      // Handle decimal part (paise)
+      const rupees = Math.floor(num);
+      const paise = Math.round((num - rupees) * 100);
+      
+      let words = "";
+      
+      // Convert rupees part
+      if (rupees > 0) {
+          words += convertNumber(rupees) + " Rupee" + (rupees !== 1 ? "s" : "");
+      }
+      
+      // Convert paise part
+      if (paise > 0) {
+          if (rupees > 0) words += " And ";
+          words += convertNumber(paise) + " Paise";
+      }
+      
+      return words + " Only";
+      
+      function convertNumber(n) {
+          if (n < 20) return a[n];
+          if (n < 100) return b[Math.floor(n/10)] + (n%10 ? " " + a[n%10] : "");
+          if (n < 1000) return a[Math.floor(n/100)] + " Hundred" + (n%100 ? " " + convertNumber(n%100) : "");
+          if (n < 100000) return convertNumber(Math.floor(n/1000)) + " Thousand" + (n%1000 ? " " + convertNumber(n%1000) : "");
+          if (n < 10000000) return convertNumber(Math.floor(n/100000)) + " Lakh" + (n%100000 ? " " + convertNumber(n%100000) : "");
+          return convertNumber(Math.floor(n/10000000)) + " Crore" + (n%10000000 ? " " + convertNumber(n%10000000) : "");
+      }
+    }
+
+    // Auto update totals when any cell changes
+    document.getElementById('items').addEventListener('input', function(e){
+      updateTotals();
+    });
+
+    // Initialize with sample values
+    updateTotals();
+  </script>
+</body>
+</html>
