@@ -233,13 +233,15 @@
 </head>
 <body>
   <div class="controls">
-    <button id="addRowBtn" class="px-3 py-2 bg-blue-600 text-white rounded">Add Row</button>
-    <button id="downloadPdfBtn" ></button>
-    <button id="printBtn" class="px-3 py-2 bg-purple-600 text-white rounded">Download</button>
+    <button id="addBtn" class="px-3 py-2 bg-blue-600 text-white rounded">Add Row</button>
+ 
+  <button id="downloadBtn" class="px-3 py-2 bg-green-600 text-white rounded">
+  Download as PDF
+</button>
     <button id="resetBtn" class="px-3 py-2 bg-gray-600 text-white rounded">Reset</button>
-    <button id="saveBtn" class="px-3 py-2 bg-green-600 text-white rounded">Save</button>
+    <button id="saveBtn" class="px-3 py-2 bg-green-600 text-white rounded">Save Data</button>
     <input type="file" id="loadFileInput" style="display: none;" accept=".json" />
-    <button id="loadBtn" class="px-3 py-2 bg-yellow-600 text-white rounded">Load</button>
+    <!-- <button id="loadBtn" class="px-3 py-2 bg-yellow-600 text-white rounded">Load</button> -->
   </div>
  
   <div id="quotation" class="paper">
@@ -321,38 +323,13 @@
             <th class="col-remove"></th>
           </tr>
         </thead>
-        <tbody id="items" class="items-body">
-          <tr>
-            <td contenteditable="true" class="editable">1</td>
-            <td contenteditable="true" class="editable">Safety Shoes - Black</td>
-            <td contenteditable="true" class="editable">6403</td>
-            <td contenteditable="true" class="editable">18%</td>
-            <td contenteditable="true" class="editable"></td>
-            <td contenteditable="true" class="editable">10</td>
-            <td contenteditable="true" class="editable">500</td>
-            <td contenteditable="true" class="editable">Pair</td>
-            <td contenteditable="true" class="editable">0</td>
-            <td class="amount">5000.00</td>
-            <td><span class="remove-row-btn">✕</span></td>
-          </tr>
-          <tr>
-            <td contenteditable="true" class="editable">2</td>
-            <td contenteditable="true" class="editable">Safety Helmet - Yellow</td>
-            <td contenteditable="true" class="editable">6506</td>
-            <td contenteditable="true" class="editable">18%</td>
-            <td contenteditable="true" class="editable"></td>
-            <td contenteditable="true" class="editable">5</td>
-            <td contenteditable="true" class="editable">350</td>
-            <td contenteditable="true" class="editable">Piece</td>
-            <td contenteditable="true" class="editable">5</td>
-            <td class="amount">1662.50</td>
-            <td><span class="remove-row-btn">✕</span></td>
-          </tr>
-        </tbody>
+       <tbody id="items" class="items-body">
+    <!-- Rows will be rendered dynamically -->
+  </tbody>
         <tfoot>
           <tr class="total-row">
             <td colspan="9">Total</td>
-            <td id="totalAmount">6662.50</td>
+            <td id="totalAmount"></td>
             <td></td>
           </tr>
         </tfoot>
@@ -384,220 +361,187 @@
     </div>
   </div>
 
-  <script>
-    // Add row functionality
-    document.getElementById('addRowBtn').addEventListener('click', function(){
-      const tbody = document.getElementById('items');
-      const index = tbody.rows.length + 1;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td contenteditable="true" class="editable">${index}</td>
-        <td contenteditable="true" class="editable">Item Description</td>
-        <td contenteditable="true" class="editable"></td>
-        <td contenteditable="true" class="editable">0%</td>
-        <td contenteditable="true" class="editable"></td>
-        <td contenteditable="true" class="editable">1</td>
-        <td contenteditable="true" class="editable">0</td>
-        <td contenteditable="true" class="editable"></td>
-        <td contenteditable="true" class="editable">0</td>
-        <td class="amount">0.00</td>
-        <td><span class="remove-row-btn">✕</span></td>
-      `;
-      tbody.appendChild(tr);
-      
-      // Add event listener to the new remove button
-      tr.querySelector('.remove-row-btn').addEventListener('click', function() {
-        removeRow(tr);
-      });
-      
-      updateTotals();
-    });
+ <script>
 
-    // Remove row functionality
-    function removeRow(row) {
-      if (document.getElementById('items').rows.length <= 1) {
-        alert("Cannot remove the last row. At least one item is required.");
-        return;
-      }
-      
-      if (confirm("Are you sure you want to remove this item?")) {
-        row.remove();
-        updateRowNumbers();
-        updateTotals();
-      }
-    }
+// downlaod as pdf 
 
-    // Update row numbers after removal
-    function updateRowNumbers() {
-      const rows = document.querySelectorAll('#items tr');
-      rows.forEach((row, index) => {
-        row.cells[0].innerText = index + 1;
-      });
-    }
-
-    // Add event listeners for remove buttons on existing rows
-    document.querySelectorAll('.remove-row-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        removeRow(this.closest('tr'));
-      });
-    });
-
-    // Download PDF functionality
-    document.getElementById('downloadPdfBtn').addEventListener('click', function(){
-  updateTotals();
-  
-  const element = document.getElementById('quotation');
-  
+document.getElementById("downloadBtn").addEventListener("click", () => {
+  const element = document.getElementById("quotation"); // only quotation div
   const opt = {
-    margin:       [10, 10, 10, 10],
-    filename:     'Aroun_Quotation.pdf',
+    margin:       0.2,
+    filename:     'Quotation.pdf',
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+    html2canvas:  { scale: 2 }, 
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
-  
   html2pdf().set(opt).from(element).save();
 });
 
 
-    // Print functionality
-    document.getElementById('printBtn').addEventListener('click', function(){
-      updateTotals();
-      window.print();
+
+const STORAGE_KEY = "quotationItems";
+
+// ---------- Load & Save ----------
+function loadItems() {
+  let items = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  renderTable(items);
+  updateTotals();
+}
+
+function saveItems() {
+  const rows = document.querySelectorAll("#items tr");
+  const items = [];
+  rows.forEach((row, index) => {
+    const cells = row.querySelectorAll("td");
+    items.push({
+      sno: index + 1,
+      desc: cells[1].innerText,
+      hsn: cells[2].innerText,
+      gst: cells[3].innerText,
+      batch: cells[4].innerText,
+      qty: parseFloat(cells[5].innerText) || 0,
+      rate: parseFloat(cells[6].innerText) || 0,
+      unit: cells[7].innerText,
+      discount: parseFloat(cells[8].innerText) || 0,
+      amount: parseFloat(cells[9].innerText) || 0
     });
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  alert("Saved successfully!");
+}
 
-    // Reset functionality
-    document.getElementById('resetBtn').addEventListener('click', function(){
-      if(confirm('Reset template to defaults? This will reload the page.')) location.reload();
-    });
+// ---------- Render Table ----------
+function renderTable(items) {
+  const tbody = document.getElementById("items");
+  tbody.innerHTML = "";
+  items.forEach((item, i) => {
+    const row = createRow(item, i + 1);
+    tbody.appendChild(row);
+  });
+}
 
-    // Save functionality - WORKING VERSION
-    document.getElementById('saveBtn').addEventListener('click', function(){
-      const data = {
-        rows: []
-      };
-      const rows = document.querySelectorAll('#items tr');
-      rows.forEach(row => {
-        const rowData = [];
-        row.querySelectorAll('td').forEach(cell => {
-          rowData.push(cell.innerText);
-        });
-        data.rows.push(rowData);
-      });
+// ---------- Create Row ----------
+function createRow(item = {}, sno) {
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td contenteditable="true">${sno || item.sno || ""}</td>
+    <td contenteditable="true">${item.desc || ""}</td>
+    <td contenteditable="true">${item.hsn || ""}</td>
+    <td contenteditable="true">${item.gst || ""}</td>
+    <td contenteditable="true">${item.batch || ""}</td>
+    <td contenteditable="true">${item.qty || ""}</td>
+    <td contenteditable="true">${item.rate || ""}</td>
+    <td contenteditable="true">${item.unit || ""}</td>
+    <td contenteditable="true">${item.discount || ""}</td>
+    <td class="amount">${item.amount ? item.amount.toFixed(2) : "0.00"}</td>
+    <td><span class="remove-row-btn">✕</span></td>
+  `;
 
-      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'quotation-data.json';
-      a.click();
-    });
-
-    // Load functionality
-    document.getElementById('loadBtn').addEventListener('click', function(){
-      document.getElementById('loadFileInput').click();
-    });
-
-    document.getElementById('loadFileInput').addEventListener('change', function(e){
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function(event){
-        const data = JSON.parse(event.target.result);
-        const tbody = document.getElementById('items');
-        tbody.innerHTML = '';
-        data.rows.forEach(rowData => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = rowData.map((cellData, index) => {
-            const isAmountCell = index === rowData.length - 1;
-            if (isAmountCell) return `<td class="amount">${cellData}</td>`;
-            return `<td contenteditable="true" class="editable">${cellData}</td>`;
-          }).join('');
-          
-          // Add remove button to the row
-          const removeCell = document.createElement('td');
-          removeCell.innerHTML = '<span class="remove-row-btn">✕</span>';
-          tr.appendChild(removeCell);
-          
-          // Add event listener to the remove button
-          removeCell.querySelector('.remove-row-btn').addEventListener('click', function() {
-            removeRow(tr);
-          });
-          
-          tbody.appendChild(tr);
-        });
-        updateTotals();
-      };
-      reader.readAsText(file);
-    });
-
-    // Update totals calculation
-    function updateTotals(){
-      const tbody = document.getElementById('items');
-      let total = 0;
-      for(let r = 0; r < tbody.rows.length; r++){
-        const cells = tbody.rows[r].cells;
-        const qty = parseFloat(cells[5].innerText) || 0;
-        const rate = parseFloat(cells[6].innerText) || 0;
-        const discount = parseFloat(cells[8].innerText) || 0;
-        const gstText = cells[3].innerText.replace('%', '');
-        const gst = parseFloat(gstText) || 0;
-
-        let amount = qty * rate;
-        let discountAmt = amount * (discount / 100);
-        let afterDiscount = amount - discountAmt;
-        let gstAmt = afterDiscount * (gst / 100);
-        let finalAmt = afterDiscount + gstAmt;
-
-        cells[9].innerText = finalAmt.toFixed(2);
-        total += finalAmt;
-      }
-      document.getElementById('totalAmount').innerText = total.toFixed(2);
-      document.getElementById('amountWords').innerText = "INR " + numberToWords(total) + " Only";
-    }
-
-    // Convert number to words
-    function numberToWords(num) {
-      if (num === 0) return "Zero";
-      
-      const a = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
-          "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
-      const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
-      
-      // Handle decimal part (paise)
-      const rupees = Math.floor(num);
-      const paise = Math.round((num - rupees) * 100);
-      
-      let words = "";
-      
-      // Convert rupees part
-      if (rupees > 0) {
-          words += convertNumber(rupees) + " Rupee" + (rupees !== 1 ? "s" : "");
-      }
-      
-      // Convert paise part
-      if (paise > 0) {
-          if (rupees > 0) words += " And ";
-          words += convertNumber(paise) + " Paise";
-      }
-      
-      return words + " Only";
-      
-      function convertNumber(n) {
-          if (n < 20) return a[n];
-          if (n < 100) return b[Math.floor(n/10)] + (n%10 ? " " + a[n%10] : "");
-          if (n < 1000) return a[Math.floor(n/100)] + " Hundred" + (n%100 ? " " + convertNumber(n%100) : "");
-          if (n < 100000) return convertNumber(Math.floor(n/1000)) + " Thousand" + (n%1000 ? " " + convertNumber(n%1000) : "");
-          if (n < 10000000) return convertNumber(Math.floor(n/100000)) + " Lakh" + (n%100000 ? " " + convertNumber(n%100000) : "");
-          return convertNumber(Math.floor(n/10000000)) + " Crore" + (n%10000000 ? " " + convertNumber(n%10000000) : "");
-      }
-    }
-
-    // Auto update totals when any cell changes
-    document.getElementById('items').addEventListener('input', function(e){
-      updateTotals();
-    });
-
-    // Initialize with sample values
+  // Delete row
+  row.querySelector(".remove-row-btn").addEventListener("click", () => {
+    row.remove();
     updateTotals();
-  </script>
+    saveItems();
+  });
+
+  // Recalculate when values change
+  row.querySelectorAll("td[contenteditable='true']").forEach((cell, i) => {
+    cell.addEventListener("input", () => {
+      updateTotals();
+    });
+  });
+
+  return row;
+}
+
+// ---------- Add Row ----------
+document.getElementById("addBtn").addEventListener("click", () => {
+  const tbody = document.getElementById("items");
+  const sno = tbody.children.length + 1;
+  const newRow = createRow({}, sno);
+  tbody.appendChild(newRow);
+});
+
+// ---------- Save Button ----------
+document.getElementById("saveBtn").addEventListener("click", saveItems);
+
+// ---------- Calculate Totals ----------
+function updateTotals() {
+  const tbody = document.getElementById("items");
+  let total = 0;
+  tbody.querySelectorAll("tr").forEach(row => {
+    const cells = row.cells;
+    const qty = parseFloat(cells[5].innerText) || 0;
+    const rate = parseFloat(cells[6].innerText) || 0;
+    const discount = parseFloat(cells[8].innerText) || 0;
+    const gstText = cells[3].innerText.replace('%','') || 0;
+    const gst = parseFloat(gstText);
+
+    let amount = qty * rate;
+    let discountAmt = amount * (discount / 100);
+    let afterDiscount = amount - discountAmt;
+    let gstAmt = afterDiscount * (gst / 100);
+    let finalAmt = afterDiscount + gstAmt;
+
+    cells[9].innerText = finalAmt.toFixed(2);
+    total += finalAmt;
+  });
+
+  document.getElementById("totalAmount").innerText = total.toFixed(2);
+  document.getElementById("amountWords").innerText = "INR " + numberToWords(total);
+}
+
+// ---------- Number to Words ----------
+function numberToWords(num) {
+  if(num===0) return "Zero";
+  const a=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten",
+    "Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+  const b=["","", "Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+
+  const rupees = Math.floor(num);
+  const paise = Math.round((num - rupees) * 100);
+  let words = "";
+
+  function convertNumber(n){
+    if(n<20) return a[n];
+    if(n<100) return b[Math.floor(n/10)] + (n%10 ? " "+a[n%10] : "");
+    if(n<1000) return a[Math.floor(n/100)] + " Hundred" + (n%100 ? " "+convertNumber(n%100):"");
+    if(n<100000) return convertNumber(Math.floor(n/1000)) + " Thousand" + (n%1000 ? " "+convertNumber(n%1000):"");
+    if(n<10000000) return convertNumber(Math.floor(n/100000)) + " Lakh" + (n%100000 ? " "+convertNumber(n%100000):"");
+    return convertNumber(Math.floor(n/10000000)) + " Crore" + (n%10000000 ? " "+convertNumber(n%10000000):"");
+  }
+
+  if(rupees>0) words+=convertNumber(rupees) + " Rupee" + (rupees!==1?"s":"");
+  if(paise>0) words+=(rupees>0?" And ":"") + convertNumber(paise) + " Paise";
+  return words + " Only";
+}
+
+// ---------- Init ----------
+window.addEventListener("DOMContentLoaded", loadItems);
+
+
+
+
+
+
+
+// Reset button
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (confirm("Are you sure you want to reset? All saved data will be cleared.")) {
+    localStorage.removeItem(STORAGE_KEY);   // clear storage
+    document.getElementById("items").innerHTML = ""; // clear table
+    document.getElementById("totalAmount").innerText = "0.00";
+    document.getElementById("amountWords").innerText = "INR Zero Only";
+    
+    // (Optional) reload default items instead of empty table:
+    // renderTable(defaultItems);
+    // updateTotals();
+
+    alert("All data cleared!");
+  }
+});
+
+</script>
+
 </body>
 </html>
