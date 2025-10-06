@@ -241,6 +241,7 @@
     <button id="resetBtn" class="px-3 py-2 bg-gray-600 text-white rounded">Reset</button>
     <button id="saveBtn" class="px-3 py-2 bg-green-600 text-white rounded">Save Data</button>
     <input type="file" id="loadFileInput" style="display: none;" accept=".json" />
+
     <!-- <button id="loadBtn" class="px-3 py-2 bg-yellow-600 text-white rounded">Load</button> -->
   </div>
  
@@ -540,6 +541,78 @@ document.getElementById("resetBtn").addEventListener("click", () => {
     alert("All data cleared!");
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ---------- Download JSON ----------
+function downloadJSON() {
+  const rows = document.querySelectorAll("#items tr");
+  const items = [];
+  rows.forEach((row, index) => {
+    const cells = row.querySelectorAll("td");
+    items.push({
+      sno: index + 1,
+      desc: cells[1].innerText,
+      hsn: cells[2].innerText,
+      gst: cells[3].innerText,
+      batch: cells[4].innerText,
+      qty: parseFloat(cells[5].innerText) || 0,
+      rate: parseFloat(cells[6].innerText) || 0,
+      unit: cells[7].innerText,
+      discount: parseFloat(cells[8].innerText) || 0,
+      amount: parseFloat(cells[9].innerText) || 0
+    });
+  });
+
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(items, null, 2));
+  const downloadAnchorNode = document.createElement('a');
+  downloadAnchorNode.setAttribute("href", dataStr);
+  downloadAnchorNode.setAttribute("download", "db.json");
+  document.body.appendChild(downloadAnchorNode);
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
+}
+
+// Attach to save button
+document.getElementById("saveBtn").addEventListener("click", downloadJSON);
+
+// ---------- Load JSON ----------
+document.getElementById("loadBtn").addEventListener("click", () => {
+  document.getElementById("loadFileInput").click();
+});
+
+document.getElementById("loadFileInput").addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const items = JSON.parse(e.target.result);
+      renderTable(items);
+      updateTotals();
+      alert("Data loaded successfully!");
+    } catch (err) {
+      alert("Invalid JSON file!");
+    }
+  };
+  reader.readAsText(file);
+});
+
 
 </script>
 
